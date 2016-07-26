@@ -28,6 +28,11 @@ EthernetPacket.prototype.decode = function (raw_packet, offset) {
         // Update the ethertype
         this.ethertype = raw_packet.readUInt16BE(offset, true);
         offset += 2;
+        
+        if (this.ethertype === 0x8100) { // VLAN-tagged QinQ
+            this.vlan2 = new Vlan().decode(raw_packet, offset);
+            offset += 2;
+        }
     }
 
     if (this.ethertype < 1536) {
