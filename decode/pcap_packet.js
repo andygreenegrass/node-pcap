@@ -3,6 +3,7 @@ var NullPacket = require("./null_packet");
 var Ipv4 = require("./ipv4");
 var RadioPacket = require("./ieee802.11/radio_packet");
 var SLLPacket = require("./sll_packet");
+var PKTapPacket = require("./pktap_packet");
 
 // Setting properties from the C++ side is very slow, so we send in a shared Buffer.
 // The C++ side does this:
@@ -47,6 +48,9 @@ PcapPacket.prototype.decode = function (packet_with_header) {
         break;
     case "LINKTYPE_LINUX_SLL":
         this.payload = new SLLPacket(this.emitter).decode(buf, 0);
+        break;
+    case "LINKTYPE_PKTAP":
+        this.payload = new PKTapPacket(this.emitter).decode(buf, 0);
         break;
     default:
         console.log("node_pcap: PcapPacket.decode - Don't yet know how to decode link type " + this.link_type);

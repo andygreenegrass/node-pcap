@@ -4,6 +4,13 @@
 #include <cstring>
 #include <string.h>
 
+#if defined(__APPLE__) && defined(DLT_PKTAP)
+/*
+ * To access DLT_PKPTAP, pcap_set_want_pktap() must be called before pcap_activate()
+ */
+extern "C" int pcap_set_want_pktap(pcap_t *, int);
+#endif
+
 #include "pcap_session.h"
 
 using namespace v8;
@@ -129,7 +136,7 @@ void PcapSession::Open(bool live, const Nan::FunctionCallbackInfo<Value>& info)
     Nan::HandleScope scope;
     char errbuf[PCAP_ERRBUF_SIZE];
 
-    if (info.Length() == 7) {
+    if (info.Length() == 8) {
         if (!info[0]->IsString()) {
             Nan::ThrowTypeError("pcap Open: info[0] must be a String");
             return;
@@ -154,18 +161,22 @@ void PcapSession::Open(bool live, const Nan::FunctionCallbackInfo<Value>& info)
             Nan::ThrowTypeError("pcap Open: info[5] must be a Boolean");
             return;
         }
-        if (!info[6]->IsInt32()) {
-            Nan::ThrowTypeError("pcap Open: info[6] must be a Number");
+        if (!info[6]->IsBoolean()) {
+            Nan::ThrowTypeError("pcap Open: info[6] must be a Boolean");
+            return;
+        }
+        if (!info[7]->IsInt32()) {
+            Nan::ThrowTypeError("pcap Open: info[7] must be a Number");
             return;
         }
     } else {
-        Nan::ThrowTypeError("pcap Open: expecting 7 arguments");
+        Nan::ThrowTypeError("pcap Open: expecting 8 arguments");
         return;
     }
     Nan::Utf8String device(info[0]->ToString());
     Nan::Utf8String filter(info[1]->ToString());
     int buffer_size = info[2]->Int32Value();
-    int timeout = info[6]->Int32Value();
+    int timeout = info[7]->Int32Value();
     Nan::Utf8String pcap_output_filename(info[3]->ToString());
 
     PcapSession* session = Nan::ObjectWrap::Unwrap<PcapSession>(info.This());
@@ -192,10 +203,11 @@ void PcapSession::Open(bool live, const Nan::FunctionCallbackInfo<Value>& info)
             return;
         }
 
-        // always use promiscuous mode
-        if (pcap_set_promisc(session->pcap_handle, 1) != 0) {
-            Nan::ThrowError("error setting promiscuous mode");
-            return;
+        if (info[6]->Int32Value()) {
+            if (pcap_set_promisc(session->pcap_handle, 1) != 0) {
+                Nan::ThrowError("error setting promiscuous mode");
+                return;
+            }
         }
 
         // Try to set buffer size.  Sometimes the OS has a lower limit that it will silently enforce.
@@ -210,15 +222,19 @@ void PcapSession::Open(bool live, const Nan::FunctionCallbackInfo<Value>& info)
             return;
         }
 
-        // fixes a previous to-do that was here.
-        if (info.Length() == 6) {
-            if (info[5]->Int32Value()) {
-                if (pcap_set_rfmon(session->pcap_handle, 1) != 0) {
-                    Nan::ThrowError(pcap_geterr(session->pcap_handle));
-                    return;
-                }
+        if (info[6]->Int32Value()) {
+            if (pcap_set_rfmon(session->pcap_handle, 1) != 0) {
+                Nan::ThrowError(pcap_geterr(session->pcap_handle));
+                return;
             }
         }
+
+#if defined(__APPLE__) && defined(DLT_PKTAP)
+		/*
+		 * Must be called before pcap_activate()
+		 */
+		pcap_set_want_pktap(session->pcap_handle, 1);
+#endif
 
         if (pcap_activate(session->pcap_handle) != 0) {
             Nan::ThrowError(pcap_geterr(session->pcap_handle));
@@ -289,6 +305,11 @@ void PcapSession::Open(bool live, const Nan::FunctionCallbackInfo<Value>& info)
     case DLT_LINUX_SLL: // "Linux cooked capture"
         ret = Nan::New("LINKTYPE_LINUX_SLL").ToLocalChecked();
         break;
+#if defined(__APPLE__) && defined(DLT_PKTAP)
+    case DLT_PKTAP: // "Max OS X PKTAP"
+        ret = Nan::New("LINKTYPE_PKTAP").ToLocalChecked();
+        break;
+#endif
     default:
         snprintf(errbuf, PCAP_ERRBUF_SIZE, "Unknown linktype %d", link_type);
         ret = Nan::New(errbuf).ToLocalChecked();

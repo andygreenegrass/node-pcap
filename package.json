@@ -1,9 +1,12 @@
 {
-  "name": "pcap2",
-  "version": "3.0.4",
+  "name": "ws-pcap2",
+  "version": "3.3.1",
   "description": "raw packet capture, decoding, and analysis",
   "license": "MIT",
   "author": "Matt Ranney <mjr@ranney.com>",
+  "contributors": [
+    "pdp <pdp@websecurify.com>"
+  ],
   "main": "./index",
   "repository": {
     "type": "git",

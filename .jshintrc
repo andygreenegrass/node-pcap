@@ -11,5 +11,10 @@
     "trailing": true,
     "undef": true,
     "unused": true,
-    "esnext": true
+    "esnext": true,
+    "globals": {
+      "beforeEach": false,
+      "describe": false,
+      "it": false
+    }
 }
