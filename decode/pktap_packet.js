@@ -74,7 +74,7 @@ PKTapPacket.prototype.decode = function (raw_packet, offset) {
     this.effective_command_name = raw_packet.toString('ascii', offset, 20);
     offset += 20;
     
-    this.extra_data = raw_packet.slice(offset, this.pktap_header_len - offset)
+    this.extra_data = raw_packet.slice(offset, this.pktap_header_len - offset);
     
     this.interface_name = this.interface_name.substr(0, this.interface_name.indexOf('\0'));
     this.command_name = this.command_name.substr(0, this.command_name.indexOf('\0'));
@@ -107,43 +107,8 @@ PKTapPacket.prototype.decode = function (raw_packet, offset) {
         break;
         
     default:
-        console.log("node_pcap: PKTapPacket() - Don't know how to decode dlt_value", this.dlt_value)
+        console.log("node_pcap: PKTapPacket() - Don't know how to decode dlt_value", this.dlt_value);
     }
-
-    //
-    // this.packet_type = raw_packet.readUInt16BE(offset);
-    // offset += 2;
-    // this.address_type = raw_packet.readUInt16BE(offset);
-    // offset += 2;
-    // this.address_len = raw_packet.readUInt16BE(offset);
-    // offset += 2;
-    // this.address = new SLLAddr(raw_packet, offset, this.address_len);
-    // offset += 8; // address uses 8 bytes in frame, but only address_len bytes are significant
-    // this.ethertype = raw_packet.readUInt16BE(offset);
-    // offset += 2;
-    //
-    // if (this.ethertype < 1536) {
-    //     // this packet is actually some 802.3 type without an ethertype
-    //     this.ethertype = 0;
-    // } else {
-    //     // http://en.wikipedia.org/wiki/EtherType
-    //     switch (this.ethertype) {
-    //     case 0x800: // IPv4
-    //         this.payload = new IPv4(this.emitter).decode(raw_packet, offset);
-    //         break;
-    //     case 0x806: // ARP
-    //         this.payload = new Arp(this.emitter).decode(raw_packet, offset);
-    //         break;
-    //     case 0x86dd: // IPv6 - http://en.wikipedia.org/wiki/IPv6
-    //         this.payload = new IPv6(this.emitter).decode(raw_packet, offset);
-    //         break;
-    //     case 0x88cc: // LLDP - http://en.wikipedia.org/wiki/Link_Layer_Discovery_Protocol
-    //         this.payload = "need to implement LLDP";
-    //         break;
-    //     default:
-    //         console.log("node_pcap: PKTapPacket() - Don't know how to decode ethertype " + this.ethertype);
-    //     }
-    // }
 
     return this;
 };
