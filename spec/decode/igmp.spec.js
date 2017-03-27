@@ -1,5 +1,5 @@
 var Igmp = require("../../decode/igmp");
-var util = require("../../util");
+var util = require("../../lib/util");
 var events = require("events");
 var shouldBehaveLikeADecoder = require("./decode").shouldBehaveLikeADecoder;
 require("should");
