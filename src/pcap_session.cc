@@ -4,6 +4,13 @@
 #include <cstring>
 #include <string.h>
 
+#if defined(__APPLE__) && defined(DLT_PKTAP)
+/*
+ * To access DLT_PKPTAP, pcap_set_want_pktap() must be called before pcap_activate()
+ */
+extern "C" int pcap_set_want_pktap(pcap_t *, int);
+#endif
+
 #include "pcap_session.h"
 
 using namespace v8;
@@ -221,6 +228,13 @@ void PcapSession::Open(bool live, const Nan::FunctionCallbackInfo<Value>& info)
                 return;
             }
         }
+
+#if defined(__APPLE__) && defined(DLT_PKTAP)
+		/*
+		 * Must be called before pcap_activate()
+		 */
+		pcap_set_want_pktap(session->pcap_handle, 1);
+#endif
 
         if (pcap_activate(session->pcap_handle) != 0) {
             Nan::ThrowError(pcap_geterr(session->pcap_handle));
