@@ -305,6 +305,11 @@ void PcapSession::Open(bool live, const Nan::FunctionCallbackInfo<Value>& info)
     case DLT_LINUX_SLL: // "Linux cooked capture"
         ret = Nan::New("LINKTYPE_LINUX_SLL").ToLocalChecked();
         break;
+#if defined(__APPLE__) && defined(DLT_PKTAP)
+    case DLT_PKTAP: // "Max OS X PKTAP"
+        ret = Nan::New("LINKTYPE_PKTAP").ToLocalChecked();
+        break;
+#endif
     default:
         snprintf(errbuf, PCAP_ERRBUF_SIZE, "Unknown linktype %d", link_type);
         ret = Nan::New(errbuf).ToLocalChecked();
