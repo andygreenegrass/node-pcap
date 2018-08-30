@@ -9,6 +9,9 @@ function EthernetAddr(raw_packet, offset) {
 	this.addr[3] = raw_packet[offset + 3];
 	this.addr[4] = raw_packet[offset + 4];
 	this.addr[5] = raw_packet[offset + 5];
+	
+	// The least significant bit of the most significant byte is used to tell if address in unicast or multicast/broadcast
+	this.unicast = !(this.addr[0] & 0x01);  // The bit will be 1 on multicast/broadcast address, and 0 on unicast ones.
 }
 
 EthernetAddr.prototype.toString = function toString() {

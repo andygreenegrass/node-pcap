@@ -15,6 +15,7 @@ module.exports = {
     TCPSession: tcp_tracker.TCPSession,
     DNSCache: DNSCache,
     libVersion: binding.lib_version(),
+    findAllDevs: binding.findalldevs,
 
     // Deprecated
     // -------------------------------------------------------------------------
